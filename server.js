@@ -46,7 +46,7 @@ app.get('/test-cors', (req, res) => {
 app.get('/login', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
-      executablePath: '/opt/render/project/.apt/usr/bin/google-chrome-stable',
+      executablePath: executablePath: '/usr/bin/google-chrome-stable',
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
