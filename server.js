@@ -1,15 +1,17 @@
 // server.js
 
-// ✅ Set Puppeteer cache and temp paths to avoid warnings
-const fsExtra = require('fs-extra'); // ensure this is in your package.json
-fsExtra.ensureDirSync('/tmp/puppeteer-cache');
+// ✅ Set Puppeteer cache path to persist across build/runtime
+process.env.PUPPETEER_CACHE_DIR = '/opt/render/project/src/.puppeteer_cache';
+
+const fsExtra = require('fs-extra');
+// Ensure the persistent cache directory exists
+fsExtra.ensureDirSync('/opt/render/project/src/.puppeteer_cache');
 fsExtra.ensureDirSync('/tmp/puppeteer-tmp');
 fsExtra.ensureDirSync('/tmp/puppeteer-tmp/puppeteer_dev_chr');
 
-
 const express = require('express');
 const cors = require('cors');
-const puppeteer = require('puppeteer'); // ✅ switched from puppeteer-core
+const puppeteer = require('puppeteer');
 const fs = require('fs/promises');
 const path = require('path');
 
@@ -49,16 +51,13 @@ async function saveCookies(page) {
   }
 }
 
-app.get('/', (req, res) => {
-  res.send('✅ Backend is live');
-});
-
-app.get('/login', async (req, res) => {
-  try {
-   async function launchBrowser() {
+// ✅ Improved browser launch configuration for Render
+async function launchBrowser() {
+  const chromePath = '/opt/render/project/src/.puppeteer_cache/chrome/linux-136.0.7103.94/chrome-linux64/chrome';
+  
   return await puppeteer.launch({
     headless: true,
-    executablePath: process.env.GOOGLE_CHROME_BIN || '.puppeteer_chrome/chrome/linux-136.0.7103.94/chrome-linux64/chrome',
+    executablePath: chromePath,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -66,30 +65,41 @@ app.get('/login', async (req, res) => {
       '--disable-accelerated-2d-canvas',
       '--no-first-run',
       '--no-zygote',
-      '--disable-gpu'
+      '--disable-gpu',
+      '--single-process',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding'
     ]
   });
 }
+
+app.get('/', (req, res) => {
+  res.send('✅ Backend is live');
+});
+
+app.get('/login', async (req, res) => {
+  let browser;
+  try {
+    browser = await launchBrowser();
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
     await new Promise(resolve => setTimeout(resolve, 60000));
     await saveCookies(page);
-    await browser.close();
     res.send('Login cookies saved.');
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).send('Login failed: ' + err.message);
+  } finally {
+    if (browser) await browser.close();
   }
 });
 
 app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
+  let browser;
   try {
-    const browser = await puppeteer.launch({
-  executablePath: puppeteer.executablePath('.puppeteer_chrome/chrome/linux-136.0.7103.94/chrome-linux64/chrome'),
-  headless: true,
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
-});
+    browser = await launchBrowser();
     const page = await browser.newPage();
     await page.goto('https://substack.com');
     await loadCookies(page);
@@ -101,11 +111,12 @@ app.post('/post-note', async (req, res) => {
     }
     await page.click('[data-testid="post-note-button"]');
     await page.waitForSelector('[data-testid="note-posted"]', { timeout: 5000 });
-    await browser.close();
     res.json({ success: true });
   } catch (err) {
     console.error('Post error:', err.message);
     res.status(500).json({ success: false, error: err.message });
+  } finally {
+    if (browser) await browser.close();
   }
 });
 
