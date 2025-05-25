@@ -1,11 +1,13 @@
-// server.js with CORS enabled and increased body size limit
+// server.js with corrected CORS settings and body size limit
 const express = require('express');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
 
 const app = express();
-app.use(cors());
-app.use(express.json({ limit: '5mb' }));
+
+// ✅ Allow all origins (or replace * with your domain for security)
+app.use(cors({ origin: '*' }));
+app.use(express.json({ limit: '1mb' }));
 
 app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
