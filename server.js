@@ -101,6 +101,7 @@ app.post('/post-note', async (req, res) => {
   try {
     browser = await launchBrowser();
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(120000);
     await page.goto('https://substack.com');
     await loadCookies(page);
     await page.goto('https://substack.com/notes/post');
