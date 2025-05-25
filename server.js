@@ -67,9 +67,11 @@ app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+  executablePath: '/usr/bin/google-chrome-stable',
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
+
     const page = await browser.newPage();
     console.log('Navigating to Substack homepage...');
     await page.goto('https://substack.com');
