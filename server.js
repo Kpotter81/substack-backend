@@ -1,8 +1,10 @@
 // server.js
 
 // ✅ Set Puppeteer cache and temp paths to avoid warnings
-process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer-cache';
-process.env.PUPPETEER_TMP_DIR = '/tmp/puppeteer-tmp';
+const fsExtra = require('fs-extra'); // ensure this is in your package.json
+fsExtra.ensureDirSync('/tmp/puppeteer-cache');
+fsExtra.ensureDirSync('/tmp/puppeteer-tmp');
+
 
 const express = require('express');
 const cors = require('cors');
