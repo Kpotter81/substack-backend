@@ -1,16 +1,24 @@
 // server.js
 
-const express = require('express');
-const cors = require('cors');
+// ✅ Set Puppeteer cache and temp paths to avoid warnings
 process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer-cache';
 process.env.PUPPETEER_TMP_DIR = '/tmp/puppeteer-tmp';
+
+const express = require('express');
+const cors = require('cors');
 const puppeteer = require('puppeteer-core');
 const fs = require('fs/promises');
 const path = require('path');
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+// ✅ Proper CORS configuration
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json({ limit: '1mb' }));
 
 const COOKIES_PATH = process.env.RENDER
