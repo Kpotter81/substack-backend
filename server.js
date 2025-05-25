@@ -53,10 +53,11 @@ app.get('/', (req, res) => {
 app.get('/login', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
-      executablePath: '/usr/bin/google-chrome-stable',
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+  executablePath: '/opt/render/.cache/puppeteer/chrome/linux-136.0.7103.94/chrome-linux64/chrome',
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
+
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
     await new Promise(resolve => setTimeout(resolve, 60000));
