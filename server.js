@@ -55,11 +55,21 @@ app.get('/', (req, res) => {
 
 app.get('/login', async (req, res) => {
   try {
-    const browser = await puppeteer.launch({
-  executablePath: puppeteer.executablePath(), // ✅ use Puppeteer's built-in resolver
-  headless: true,
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
-});
+   async function launchBrowser() {
+  return await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.GOOGLE_CHROME_BIN || '/app/.apt/usr/bin/google-chrome',
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  });
+}
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
     await new Promise(resolve => setTimeout(resolve, 60000));
