@@ -1,7 +1,8 @@
-// server.js using full Puppeteer package (auto-installing Chromium)
+// server.js
+
 const express = require('express');
 const cors = require('cors');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const fs = require('fs/promises');
 const path = require('path');
 
@@ -39,24 +40,19 @@ app.get('/', (req, res) => {
   res.send('✅ Backend is live');
 });
 
-app.get('/test-cors', (req, res) => {
-  res.send('🧪 CORS is working!');
-});
-
 app.get('/login', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
-      executablePath: executablePath: '/usr/bin/google-chrome-stable',
+      executablePath: '/usr/bin/google-chrome-stable',
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
-    console.log('Please log in manually. The browser will close in 60 seconds.');
     await new Promise(resolve => setTimeout(resolve, 60000));
     await saveCookies(page);
     await browser.close();
-    res.send('Login saved. You can now close this tab and use the scheduler.');
+    res.send('Login cookies saved.');
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).send('Login failed: ' + err.message);
@@ -67,16 +63,13 @@ app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
     const browser = await puppeteer.launch({
-  executablePath: '/usr/bin/google-chrome-stable',
-  headless: true,
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
-});
-
+      executablePath: '/usr/bin/google-chrome-stable',
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
-    console.log('Navigating to Substack homepage...');
     await page.goto('https://substack.com');
     await loadCookies(page);
-    console.log('Navigating to note composer...');
     await page.goto('https://substack.com/notes/post');
     await page.waitForSelector('[data-testid="note-composer"]');
     await page.type('[data-testid="note-composer"]', content);
