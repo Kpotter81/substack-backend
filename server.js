@@ -1,4 +1,4 @@
-// server.js with CORS middleware fix and root test endpoint
+// server.js with CORS middleware fix and cookie path fix for Render
 const express = require('express');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
@@ -7,19 +7,21 @@ const path = require('path');
 
 const app = express();
 
-// ✅ Ensure CORS is enabled
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '1mb' }));
 
-const COOKIES_PATH = path.resolve(__dirname, 'cookies.json');
+// 🛠️ Dynamic cookie path for local and Render environments
+const COOKIES_PATH = process.env.RENDER
+  ? '/etc/secrets/cookies.json'
+  : path.resolve(__dirname, 'cookies.json');
 
 async function loadCookies(page) {
   try {
     const cookies = JSON.parse(await fs.readFile(COOKIES_PATH, 'utf8'));
     await page.setCookie(...cookies);
     console.log('✅ Cookies loaded');
-  } catch {
-    console.log('⚠️ No saved cookies found');
+  } catch (err) {
+    console.error('⚠️ No saved cookies found or failed to load:', err.message);
   }
 }
 
@@ -29,12 +31,10 @@ async function saveCookies(page) {
   console.log('✅ Cookies saved');
 }
 
-// 🔍 Root endpoint for testing
 app.get('/', (req, res) => {
   res.send('✅ Backend is live');
 });
 
-// 🔍 Optional test endpoint to verify CORS headers
 app.get('/test-cors', (req, res) => {
   res.send('🧪 CORS is working!');
 });
@@ -72,6 +72,7 @@ app.post('/post-note', async (req, res) => {
     await browser.close();
     res.json({ success: true });
   } catch (err) {
+    console.error('Post error:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
