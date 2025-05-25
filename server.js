@@ -1,23 +1,28 @@
+// server.js with CORS enabled and increased body size limit
 const express = require('express');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 
 app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
-    console.log('Login manually, then press ENTER in Render log terminal');
+    console.log('Login manually, then press ENTER in Render log terminal.');
     await new Promise(resolve => process.stdin.once('data', resolve));
     await page.goto('https://substack.com/notes/post');
     await page.waitForSelector('[data-testid="note-composer"]');
     await page.type('[data-testid="note-composer"]', content);
-    if (imageUrl) await page.type('[data-testid="note-composer"]', '\n' + imageUrl);
+    if (imageUrl) {
+      await page.type('[data-testid="note-composer"]', '\n' + imageUrl);
+    }
     await page.click('[data-testid="post-note-button"]');
     await page.waitForSelector('[data-testid="note-posted"]', { timeout: 5000 });
     await browser.close();
