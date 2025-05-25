@@ -2,7 +2,7 @@
 
 // ✅ Set Puppeteer cache and temp paths to avoid warnings
 const fsExtra = require('fs-extra'); // ensure this is in your package.json
-fsExtra.ensureDirSync('/opt/render/.cache/puppeteer');
+fsExtra.ensureDirSync('/tmp/puppeteer-cache');
 fsExtra.ensureDirSync('/tmp/puppeteer-tmp');
 fsExtra.ensureDirSync('/tmp/puppeteer-tmp/puppeteer_dev_chr');
 
