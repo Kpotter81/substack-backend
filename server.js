@@ -56,9 +56,10 @@ app.get('/', (req, res) => {
 app.get('/login', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+  executablePath: puppeteer.executablePath(), // ✅ use Puppeteer's built-in resolver
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
     await new Promise(resolve => setTimeout(resolve, 60000));
@@ -75,9 +76,10 @@ app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+  executablePath: puppeteer.executablePath(), // ✅ use Puppeteer's built-in resolver
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
     const page = await browser.newPage();
     await page.goto('https://substack.com');
     await loadCookies(page);
