@@ -74,10 +74,10 @@ app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
     const browser = await puppeteer.launch({
-      executablePath: '/usr/bin/google-chrome-stable',
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+  executablePath: '/opt/render/.cache/puppeteer/chrome/linux-136.0.7103.94/chrome-linux64/chrome',
+  headless: true,
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
     const page = await browser.newPage();
     await page.goto('https://substack.com');
     await loadCookies(page);
