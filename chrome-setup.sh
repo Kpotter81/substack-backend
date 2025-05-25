@@ -31,7 +31,10 @@ echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /et
 apt-get update -yqq
 apt-get install -yqq google-chrome-stable
 
-which google-chrome-stable || echo "❌ Chrome install failed"
+# Debug output
+ls -alh /usr/bin/google-chrome-stable || echo "❌ google-chrome-stable not found"
+which google-chrome-stable || echo "❌ which command failed"
+google-chrome-stable --version || echo "❌ version command failed"
 
 apt-get clean
 rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
