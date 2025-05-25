@@ -2,6 +2,8 @@
 
 const express = require('express');
 const cors = require('cors');
+process.env.PUPPETEER_CACHE_DIR = '/tmp/puppeteer-cache';
+process.env.PUPPETEER_TMP_DIR = '/tmp/puppeteer-tmp';
 const puppeteer = require('puppeteer-core');
 const fs = require('fs/promises');
 const path = require('path');
