@@ -1,10 +1,9 @@
-// server.js with puppeteer-core and automatic Chrome install
+// server.js using full Puppeteer package (auto-installing Chromium)
 const express = require('express');
 const cors = require('cors');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const fs = require('fs/promises');
 const path = require('path');
-const { executablePath } = require('puppeteer');
 
 const app = express();
 
@@ -22,7 +21,7 @@ async function loadCookies(page) {
     console.log('✅ Cookies loaded');
   } catch (err) {
     console.error('⚠️ Error loading cookies:', err.message);
-    throw err; // Ensure upstream knows this failed
+    throw err;
   }
 }
 
@@ -48,7 +47,6 @@ app.get('/login', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: executablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -69,7 +67,6 @@ app.post('/post-note', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: executablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
