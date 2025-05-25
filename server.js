@@ -58,7 +58,7 @@ app.get('/login', async (req, res) => {
    async function launchBrowser() {
   return await puppeteer.launch({
     headless: true,
-    executablePath: process.env.GOOGLE_CHROME_BIN || '/app/.apt/usr/bin/google-chrome',
+    executablePath: process.env.GOOGLE_CHROME_BIN || '.puppeteer_chrome/chrome/linux-136.0.7103.94/chrome-linux64/chrome',
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -86,7 +86,7 @@ app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
     const browser = await puppeteer.launch({
-  executablePath: puppeteer.executablePath(), // ✅ use Puppeteer's built-in resolver
+  executablePath: puppeteer.executablePath('.puppeteer_chrome/chrome/linux-136.0.7103.94/chrome-linux64/chrome'),
   headless: true,
   args: ['--no-sandbox', '--disable-setuid-sandbox']
 });
