@@ -1,9 +1,10 @@
-// server.js with Render Chrome path fix and error logging
+// server.js with puppeteer-core and automatic Chrome install
 const express = require('express');
 const cors = require('cors');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const fs = require('fs/promises');
 const path = require('path');
+const { executablePath } = require('puppeteer');
 
 const app = express();
 
@@ -21,7 +22,7 @@ async function loadCookies(page) {
     console.log('✅ Cookies loaded');
   } catch (err) {
     console.error('⚠️ Error loading cookies:', err.message);
-    throw err;
+    throw err; // Ensure upstream knows this failed
   }
 }
 
@@ -46,8 +47,8 @@ app.get('/test-cors', (req, res) => {
 app.get('/login', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
-      executablePath: '/usr/bin/google-chrome',
       headless: true,
+      executablePath: executablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -67,8 +68,8 @@ app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
     const browser = await puppeteer.launch({
-      executablePath: '/usr/bin/google-chrome',
       headless: true,
+      executablePath: executablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
