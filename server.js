@@ -1,4 +1,4 @@
-// server.js with CORS middleware fix and cookie path fix for Render
+// server.js with Render Chrome path fix and error logging
 const express = require('express');
 const cors = require('cors');
 const puppeteer = require('puppeteer');
@@ -10,7 +10,6 @@ const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '1mb' }));
 
-// 🛠️ Dynamic cookie path for local and Render environments
 const COOKIES_PATH = process.env.RENDER
   ? '/etc/secrets/cookies.json'
   : path.resolve(__dirname, 'cookies.json');
@@ -21,14 +20,19 @@ async function loadCookies(page) {
     await page.setCookie(...cookies);
     console.log('✅ Cookies loaded');
   } catch (err) {
-    console.error('⚠️ No saved cookies found or failed to load:', err.message);
+    console.error('⚠️ Error loading cookies:', err.message);
+    throw err;
   }
 }
 
 async function saveCookies(page) {
-  const cookies = await page.cookies();
-  await fs.writeFile(COOKIES_PATH, JSON.stringify(cookies, null, 2));
-  console.log('✅ Cookies saved');
+  try {
+    const cookies = await page.cookies();
+    await fs.writeFile(COOKIES_PATH, JSON.stringify(cookies, null, 2));
+    console.log('✅ Cookies saved');
+  } catch (err) {
+    console.error('⚠️ Error saving cookies:', err.message);
+  }
 }
 
 app.get('/', (req, res) => {
@@ -41,7 +45,11 @@ app.get('/test-cors', (req, res) => {
 
 app.get('/login', async (req, res) => {
   try {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+      executablePath: '/usr/bin/google-chrome',
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
     await page.goto('https://substack.com/sign-in');
     console.log('Please log in manually. The browser will close in 60 seconds.');
@@ -50,6 +58,7 @@ app.get('/login', async (req, res) => {
     await browser.close();
     res.send('Login saved. You can now close this tab and use the scheduler.');
   } catch (err) {
+    console.error('Login error:', err.message);
     res.status(500).send('Login failed: ' + err.message);
   }
 });
@@ -57,10 +66,16 @@ app.get('/login', async (req, res) => {
 app.post('/post-note', async (req, res) => {
   const { id, content, imageUrl } = req.body;
   try {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+      executablePath: '/usr/bin/google-chrome',
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
+    console.log('Navigating to Substack homepage...');
     await page.goto('https://substack.com');
     await loadCookies(page);
+    console.log('Navigating to note composer...');
     await page.goto('https://substack.com/notes/post');
     await page.waitForSelector('[data-testid="note-composer"]');
     await page.type('[data-testid="note-composer"]', content);
@@ -72,7 +87,7 @@ app.post('/post-note', async (req, res) => {
     await browser.close();
     res.json({ success: true });
   } catch (err) {
-    console.error('Post error:', err);
+    console.error('Post error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
