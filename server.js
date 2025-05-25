@@ -4,6 +4,7 @@
 const fsExtra = require('fs-extra'); // ensure this is in your package.json
 fsExtra.ensureDirSync('/tmp/puppeteer-cache');
 fsExtra.ensureDirSync('/tmp/puppeteer-tmp');
+fsExtra.ensureDirSync('/tmp/puppeteer-tmp/puppeteer_dev_chr');
 
 
 const express = require('express');
